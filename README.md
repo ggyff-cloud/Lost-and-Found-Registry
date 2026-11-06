@@ -1,1 +1,5 @@
-# Lost-and-Found-Registry
+## Setup
+Run `python app.py`
+
+## Testing
+Run `pytest`
