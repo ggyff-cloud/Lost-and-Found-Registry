@@ -10,6 +10,7 @@ from __future__ import annotations
 
 import os
 import sqlite3
+import time
 from pathlib import Path
 
 SCHEMA_PATH = Path(__file__).with_name("schema.sql")
@@ -32,8 +33,37 @@ def connect(db_path: str | Path | None = None, *, wal: bool = True) -> sqlite3.C
     conn.execute("PRAGMA foreign_keys = ON")
     conn.execute("PRAGMA busy_timeout = 5000")
     if wal:
-        conn.execute("PRAGMA journal_mode = WAL")
+        _enable_wal(conn)
     return conn
+
+
+def _enable_wal(conn: sqlite3.Connection) -> None:
+    """Put the file in write-ahead logging once, then reuse the stored mode.
+
+    Switching the journal mode takes a short exclusive lock, so running the
+    pragma from every new connection makes parallel writers fail with
+    ``database is locked`` even though the file is already in WAL. The mode is
+    stored in the file, so reading it first and switching only when it differs
+    keeps concurrent connections from contending.
+
+    Args:
+        conn: Open connection whose database should use write-ahead logging.
+
+    Raises:
+        sqlite3.OperationalError: The mode could not be changed while another
+            writer kept the file locked.
+    """
+    for attempt in range(20):
+        current = conn.execute("PRAGMA journal_mode").fetchone()[0]
+        if str(current).lower() == "wal":
+            return
+        try:
+            conn.execute("PRAGMA journal_mode = WAL")
+            return
+        except sqlite3.OperationalError:
+            if attempt == 19:
+                raise
+            time.sleep(0.05)
 
 
 def init_db(conn: sqlite3.Connection) -> None:
