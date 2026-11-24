@@ -92,6 +92,8 @@ def test_b4_ten_simultaneous_claims_leave_exactly_one_owner(conn: sqlite3.Connec
             result = "claimed"
         except svc.Conflict:
             result = "conflict"
+        except Exception as exc:  # noqa: BLE001 - reported by the assertions below
+            result = f"error: {exc}"
         finally:
             worker.close()
         with lock:
@@ -103,8 +105,8 @@ def test_b4_ten_simultaneous_claims_leave_exactly_one_owner(conn: sqlite3.Connec
     for thread in threads:
         thread.join()
 
-    assert outcomes.count("claimed") == 1
-    assert outcomes.count("conflict") == 9
+    assert outcomes.count("claimed") == 1, outcomes
+    assert outcomes.count("conflict") == 9, outcomes
     assert svc.claim_count(conn, item_id) == 1
 
 
