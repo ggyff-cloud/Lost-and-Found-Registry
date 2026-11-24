@@ -1,0 +1,68 @@
+{
+  "environment": {
+    "python": "3.12.14",
+    "sqlite": "3.53.1",
+    "platform": "Windows-11-10.0.22621-SP0"
+  },
+  "contention_wal": {
+    "wal": true,
+    "attempts": 100,
+    "items": 20,
+    "claimed": 20,
+    "conflict": 80,
+    "locked": 0,
+    "errors": 0,
+    "wall_s": 3.204,
+    "attempts_per_s": 31.2,
+    "invariant_violations": 0,
+    "status_mismatches": 0,
+    "mean_ms": 668.25,
+    "p50_ms": 317.29,
+    "p95_ms": 2526.75,
+    "p99_ms": 2950.04,
+    "max_ms": 3056.33
+  },
+  "contention_rollback": {
+    "wal": false,
+    "attempts": 100,
+    "items": 20,
+    "claimed": 20,
+    "conflict": 80,
+    "locked": 0,
+    "errors": 0,
+    "wall_s": 2.14,
+    "attempts_per_s": 46.7,
+    "invariant_violations": 0,
+    "status_mismatches": 0,
+    "mean_ms": 1058.37,
+    "p50_ms": 1011.19,
+    "p95_ms": 1882.29,
+    "p99_ms": 2093.12,
+    "max_ms": 2097.86
+  },
+  "sequential": {
+    "claims": 200,
+    "claim": {
+      "mean_ms": 3.25,
+      "p50_ms": 3.06,
+      "p95_ms": 4.49,
+      "p99_ms": 5.44,
+      "max_ms": 6.89
+    },
+    "register": {
+      "mean_ms": 3.01,
+      "p50_ms": 3.0,
+      "p95_ms": 4.08,
+      "p99_ms": 4.82,
+      "max_ms": 8.39
+    }
+  },
+  "injection": {
+    "id_payload": "u002' OR 1=1 --",
+    "id_outcome": "refused-422",
+    "claims_injected": 0,
+    "name_payload": "Umbrella'; DROP TABLE items; --",
+    "name_stored_verbatim": true,
+    "items_table_survived": true
+  }
+}

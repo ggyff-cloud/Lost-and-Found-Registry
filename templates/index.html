@@ -1,0 +1,90 @@
+﻿{% extends "base.html" %}
+{% block title %}{{ status }} items &middot; Lost &amp; Found{% endblock %}
+{% block content %}
+<section class="page-head">
+  <div>
+    <h1>{{ status }} items</h1>
+    <p class="lede">
+      {% if status == 'Unclaimed' %}Everything here is still waiting for an owner. Open an item to claim it, or report something you have lost.
+      {% elif status == 'Claimed' %}Items a student has already claimed, and who holds each one. A coordinator closes them from the item page.
+      {% else %}Items whose handover was confirmed. A returned item can never be claimed again.{% endif %}
+    </p>
+  </div>
+  {% if status == 'Unclaimed' %}<a class="btn btn--primary" href="{{ url_for('register') }}">Report a lost item</a>{% endif %}
+</section>
+
+<nav class="tabs" aria-label="Filter by status">
+  {% for state in states %}
+    <a class="tab{% if state == status %} is-active{% endif %}" href="{{ url_for('index', status=state) }}">{{ state }}<span class="tab__n">{{ counts[state] }}</span></a>
+  {% endfor %}
+</nav>
+
+{% if status == 'Unclaimed' and items %}
+<ol class="steps">
+  <li>
+    <span class="steps__n">1</span>
+    <div><strong>Report</strong><p>A student describes the item, the place and the date.</p></div>
+  </li>
+  <li>
+    <span class="steps__n">2</span>
+    <div><strong>Claim</strong><p>The first claim wins; a second one is refused with 409.</p></div>
+  </li>
+  <li>
+    <span class="steps__n">3</span>
+    <div><strong>Hand over</strong><p>A coordinator marks the item returned and closes it.</p></div>
+  </li>
+</ol>
+{% endif %}
+
+{% if items %}
+<div class="card card--flush">
+  <div class="table-wrap">
+    <table class="table">
+      <thead>
+        <tr><th>Item</th><th>Place</th><th>Lost at</th>{% if status != 'Unclaimed' %}<th>Status</th>{% endif %}<th class="table__action"></th></tr>
+      </thead>
+      <tbody>
+      {% for item in items %}
+        <tr>
+          <td>
+            <a class="item-link" href="{{ url_for('item', item_id=item['id']) }}">{{ item['name'] }}</a>
+            <span class="row-id">
+              Item #{{ item['id'] }}{% if item['claimant_id'] %} &middot; claimed by {{ users.get(item['claimant_id'], item['claimant_id']) }}{% endif %}
+            </span>
+          </td>
+          <td>{{ item['place'] }}</td>
+          <td class="muted">{{ item['occurred_at'] }}</td>
+          {% if status != 'Unclaimed' %}<td><span class="badge badge--{{ item['status']|lower }}">{{ item['status'] }}</span></td>{% endif %}
+          <td class="table__action">
+            <a class="btn btn--ghost btn--small" href="{{ url_for('item', item_id=item['id']) }}">Open</a>
+          </td>
+        </tr>
+      {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+{% else %}
+<div class="card empty">
+  <div class="empty__mark" aria-hidden="true">
+    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+      <path d="M4 7h16v13H4z"></path>
+      <path d="M9 7V4h6v3"></path>
+    </svg>
+  </div>
+  {% if status == 'Unclaimed' %}
+    <h2>Nothing is waiting for an owner</h2>
+    <p>When someone reports a lost item it appears here, and the first student to claim it becomes its only owner.</p>
+    <a class="btn btn--primary" href="{{ url_for('register') }}">Report the first item</a>
+  {% elif status == 'Claimed' %}
+    <h2>No item has been claimed yet</h2>
+    <p>Once a student claims an item it moves here, keeps its record and can be closed by a coordinator.</p>
+    <a class="btn btn--primary" href="{{ url_for('index', status='Unclaimed') }}">Back to unclaimed items</a>
+  {% else %}
+    <h2>No item has been returned yet</h2>
+    <p>A returned item keeps its claim record and can no longer be claimed by anyone.</p>
+    <a class="btn btn--primary" href="{{ url_for('index', status='Claimed') }}">See claimed items</a>
+  {% endif %}
+</div>
+{% endif %}
+{% endblock %}
