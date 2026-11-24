@@ -1,0 +1,58 @@
+{
+  "trials": 20,
+  "claimants": 10,
+  "naive": {
+    "trials_with_double_claim": 20,
+    "max_claims": 10,
+    "mean_claims": 7.8,
+    "counts": [
+      5,
+      10,
+      10,
+      10,
+      10,
+      8,
+      10,
+      2,
+      10,
+      10,
+      5,
+      7,
+      7,
+      10,
+      8,
+      8,
+      8,
+      4,
+      10,
+      4
+    ]
+  },
+  "fixed": {
+    "trials_with_double_claim": 0,
+    "max_claims": 0,
+    "mean_claims": 0.0,
+    "counts": [
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0
+    ]
+  }
+}

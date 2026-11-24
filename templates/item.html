@@ -1,0 +1,57 @@
+{% extends "base.html" %}
+{% block title %}{{ item['name'] }} &middot; Lost &amp; Found{% endblock %}
+{% block content %}
+<section class="page-head">
+  <div>
+    <h1>{{ item['name'] }}</h1>
+    <p class="lede">
+      <span class="badge badge--{{ item['status']|lower }}">{{ item['status'] }}</span>
+      <span class="muted">&nbsp;Item #{{ item['id'] }}</span>
+    </p>
+  </div>
+  <a class="btn btn--ghost" href="{{ url_for('index') }}">Back to the list</a>
+</section>
+
+<div class="split">
+  <div class="card">
+    <h2>Details</h2>
+    <dl class="facts">
+      <div><dt>Description</dt><dd>{{ item['description'] or "Not given" }}</dd></div>
+      <div><dt>Where it was lost</dt><dd>{{ item['place'] }}</dd></div>
+      <div><dt>When it was lost</dt><dd>{{ item['occurred_at'] }}</dd></div>
+      {% if item['claimant_id'] %}<div><dt>Claimed by</dt><dd>{{ users.get(item['claimant_id'], item['claimant_id']) }}</dd></div>{% endif %}
+      {% if item['claimed_at'] %}<div><dt>Claimed at</dt><dd class="muted">{{ item['claimed_at']|replace('T', ' ')|replace('Z', ' UTC') }}</dd></div>{% endif %}
+    </dl>
+  </div>
+
+  <div class="card action-card">
+    {% if item['status'] == 'Unclaimed' %}
+      <h2>Claim this item</h2>
+      <p class="hint">One claim per item. A second student is refused, even if both click at the same moment.</p>
+      <form class="form" method="post" action="{{ url_for('claim', item_id=item['id']) }}">
+        <div class="field">
+          <label for="claimant_id">Claiming as</label>
+          <select id="claimant_id" name="claimant_id">
+            {% for value, label in users.items() if 'Claimant' in label %}<option value="{{ value }}">{{ label }}</option>{% endfor %}
+          </select>
+        </div>
+        <div class="form__actions">
+          <button class="btn btn--primary" type="submit">Claim item</button>
+        </div>
+      </form>
+    {% elif item['status'] == 'Claimed' %}
+      <h2>Confirm the handover</h2>
+      <p class="hint">Only a coordinator closes an item, and a returned item can never be claimed again.</p>
+      <form class="form" method="post" action="{{ url_for('confirm_return', item_id=item['id']) }}">
+        <div class="form__actions">
+          <button class="btn btn--primary" type="submit">Mark as returned</button>
+        </div>
+      </form>
+    {% else %}
+      <h2>Returned</h2>
+      <p class="hint">This item has been returned and can no longer be claimed.</p>
+      <a class="btn btn--ghost" href="{{ url_for('index') }}">Browse unclaimed items</a>
+    {% endif %}
+  </div>
+</div>
+{% endblock %}

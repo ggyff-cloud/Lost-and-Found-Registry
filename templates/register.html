@@ -1,0 +1,50 @@
+{% extends "base.html" %}
+{% block title %}Report a lost item &middot; Lost &amp; Found{% endblock %}
+{% block content %}
+<section class="page-head">
+  <div>
+    <h1>Report a lost item</h1>
+    <p class="lede">Give enough detail that the owner of the item can recognise it in the list.</p>
+  </div>
+</section>
+
+<div class="card" style="max-width: 46rem;">
+  <form class="form" method="post">
+    <div class="field">
+      <label for="name">Item</label>
+      <input id="name" name="name" required placeholder="Black umbrella">
+    </div>
+
+    <div class="field">
+      <label for="description">Description</label>
+      <textarea id="description" name="description" rows="2" placeholder="Folding, wooden handle"></textarea>
+      <p class="hint">Optional. Anything that makes the item recognisable.</p>
+    </div>
+
+    <div class="form__row">
+      <div class="field">
+        <label for="place">Where it was lost</label>
+        <input id="place" name="place" required placeholder="Library, 2nd floor">
+      </div>
+      <div class="field">
+        <label for="occurred_at">When it was lost</label>
+        <input id="occurred_at" name="occurred_at" type="text" required placeholder="2026-11-21">
+        <p class="hint">Use YYYY-MM-DD.</p>
+      </div>
+    </div>
+
+    <div class="field">
+      <label for="reporter_id">Reported as</label>
+      <select id="reporter_id" name="reporter_id">
+        {% for value, label in users.items() %}<option value="{{ value }}">{{ label }}</option>{% endfor %}
+      </select>
+      <p class="hint">The demonstration uses fixed accounts instead of a login system.</p>
+    </div>
+
+    <div class="form__actions">
+      <button class="btn btn--primary" type="submit">Save item</button>
+      <a class="btn btn--ghost" href="{{ url_for('index') }}">Cancel</a>
+    </div>
+  </form>
+</div>
+{% endblock %}
