@@ -1,8 +1,0 @@
-__pycache__/
-*.pyc
-.venv/
-*.sqlite3
-*.sqlite3-wal
-*.sqlite3-shm
-results/smoke/
-results/trials/
