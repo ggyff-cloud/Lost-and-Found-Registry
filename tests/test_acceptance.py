@@ -115,12 +115,19 @@ def test_b5_return_closes_the_item(conn: sqlite3.Connection) -> None:
     item_id = _new_item(conn)
     svc.claim_item(conn, item_id, "u002")
 
-    result = svc.confirm_return(conn, item_id)
+    result = svc.confirm_return(conn, item_id, "u900")
 
     assert result["status"] == "Returned"
     assert svc.get_item(conn, item_id)["status"] == "Returned"
     with pytest.raises(svc.Conflict):
         svc.claim_item(conn, item_id, "u003")
+
+    # Closing an item is the coordinator's step, so the claimant cannot do it.
+    unclosed = _new_item(conn)
+    svc.claim_item(conn, unclosed, "u002")
+    with pytest.raises(svc.Forbidden):
+        svc.confirm_return(conn, unclosed, "u002")
+    assert svc.get_item(conn, unclosed)["status"] == "Claimed"
 
 
 def test_b5_return_requires_a_claim(conn: sqlite3.Connection) -> None:

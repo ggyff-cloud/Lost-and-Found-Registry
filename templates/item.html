@@ -43,6 +43,12 @@
       <h2>Confirm the handover</h2>
       <p class="hint">Only a coordinator closes an item, and a returned item can never be claimed again.</p>
       <form class="form" method="post" action="{{ url_for('confirm_return', item_id=item['id']) }}">
+        <div class="field">
+          <label for="confirmed_by">Confirming as</label>
+          <select id="confirmed_by" name="confirmed_by">
+            {% for value, label in users.items() %}<option value="{{ value }}"{% if value == 'u900' %} selected{% endif %}>{{ label }}</option>{% endfor %}
+          </select>
+        </div>
         <div class="form__actions">
           <button class="btn btn--primary" type="submit">Mark as returned</button>
         </div>
