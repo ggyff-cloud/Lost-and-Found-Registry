@@ -48,6 +48,12 @@ class Conflict(ServiceError):
     status = 409
 
 
+class Forbidden(ServiceError):
+    """The caller is not the role that may make this change."""
+
+    status = 403
+
+
 def _now() -> str:
     """Return the current UTC time in the format stored in the database."""
     return datetime.now(timezone.utc).strftime(ISO)
@@ -196,12 +202,17 @@ def claim_item(conn: sqlite3.Connection, item_id: int, claimant_id: str) -> dict
     return {"item_id": item_id, "claimant_id": claimant_id, "created_at": created_at}
 
 
-def confirm_return(conn: sqlite3.Connection, item_id: int) -> dict[str, Any]:
+def confirm_return(
+    conn: sqlite3.Connection, item_id: int, confirmed_by: str | None = None
+) -> dict[str, Any]:
     """Mark a claimed item as returned, closing it to further claims.
 
     Args:
         conn: Open connection.
         item_id: Item the coordinator has handed over.
+        confirmed_by: Identifier of the person confirming. When given it must
+            name a coordinator, because closing an item is the coordinator's
+            step and not the claimant's.
 
     Returns:
         ``{"item_id": ..., "status": "Returned"}``.
@@ -209,7 +220,20 @@ def confirm_return(conn: sqlite3.Connection, item_id: int) -> dict[str, Any]:
     Raises:
         NotFound: The item does not exist.
         Conflict: The item is not currently claimed.
+        Forbidden: ``confirmed_by`` names someone who is not a coordinator.
+        ServiceError: ``confirmed_by`` names no known user.
     """
+    if confirmed_by is not None:
+        user = conn.execute(
+            "SELECT role FROM users WHERE id = ?", (confirmed_by,)
+        ).fetchone()
+        if user is None:
+            raise ServiceError(f"unknown user {confirmed_by}", status=422)
+        if user["role"] != "coordinator":
+            raise Forbidden(
+                f"{confirmed_by} is a {user['role']}, and only a coordinator "
+                "can confirm a handover"
+            )
     conn.execute("BEGIN IMMEDIATE")
     try:
         row = conn.execute("SELECT status FROM items WHERE id = ?", (item_id,)).fetchone()

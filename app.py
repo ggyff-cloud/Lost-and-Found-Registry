@@ -123,7 +123,9 @@ def create_app(db_path: str | None = None) -> Flask:
     def confirm_return(item_id: int) -> Any:
         """Confirm the handover as a coordinator (B5)."""
         try:
-            svc.confirm_return(get_conn(), item_id)
+            svc.confirm_return(
+                get_conn(), item_id, request.form.get("confirmed_by") or None
+            )
         except svc.ServiceError as exc:
             flash(str(exc))
         return redirect(url_for("item", item_id=item_id))
@@ -172,11 +174,15 @@ def create_app(db_path: str | None = None) -> Flask:
 
     @app.post("/api/items/<int:item_id>/return")
     def api_return(item_id: int) -> Any:
-        """Confirm the handover through the API."""
+        """Confirm the handover through the API; a claimant is refused with 403."""
+        body = request.get_json(silent=True) or {}
         try:
-            return jsonify(svc.confirm_return(get_conn(), item_id))
+            stored = svc.confirm_return(
+                get_conn(), item_id, body.get("confirmed_by", "u900")
+            )
         except svc.ServiceError as exc:
             return jsonify(error=str(exc)), exc.status
+        return jsonify(stored), 200
 
     return app
 
